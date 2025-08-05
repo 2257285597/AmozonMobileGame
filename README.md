@@ -1,6 +1,43 @@
 # 🎮 Amazon Mobile Games Scraper
 
-[![   pip install -r requirements.txt
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
+[![Scrapy](https://img.shields.io/badge/Scrapy-2.0+-red.svg)](https://scrapy.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+## 🌟 项目概述
+
+这是一个完整的亚马逊手机游戏数据爬取和展示系统，提供中文界面和智能筛选功能。
+
+**主要特性：**
+- 🕷️ 基于Scrapy的高效爬虫系统
+- 🌐 Flask Web界面，支持实时筛选
+- 📊 丰富的数据统计和可视化
+- 🎯 多维度智能筛选（价格、类型、评论数、时间）
+- 📦 支持打包为独立可执行文件
+
+## 🛠️ 环境要求
+
+- Python 3.8+
+- Windows系统（批处理文件适配）
+
+## 📦 安装步骤
+
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/your-username/amazon-mobile-games-scraper.git
+   cd amazon-mobile-games-scraper
+   ```
+
+2. **创建虚拟环境**
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate  # Windows
+   ```
+
+3. **安装依赖**
+   ```bash
+   pip install -r requirements.txt
    ```
 
 ## ⚙️ 重要配置说明
@@ -24,46 +61,6 @@
 项目无需额外环境变量配置，所有配置已内置。如需自定义：
 - 修改 `web_app/app.py` 中的 `app.run()` 参数调整端口
 - 修改 `amazon_scraper/amazon_scraper/settings.py` 调整爬虫行为
-
-## 🚀 快速启动on](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
-[![Scrapy](https://img.shields.io/badge/Scrapy-2.0+-red.svg)](https://scrapy.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-## 🌟 项目概述
-
-这是一个完整的亚马逊手机游戏数据爬取和展示系统，提供中文界面和智能筛选功能。
-
-**主要特性：**
-- 🕷️ 基于Scrapy的高效爬虫系统
-- 🌐 Flask Web界面，支持实时筛选
-- 📊 丰富的数据统计和可视化
-- 🎯 多维度智能筛选（价格、类型、评论数、时间）
-- 📦 支持打包为独立可执行文件
-
-## �️ 环境要求
-
-- Python 3.8+
-- Windows系统（批处理文件适配）
-
-## 📦 安装步骤
-
-1. **克隆项目**
-   ```bash
-   git clone https://github.com/your-username/amazon-mobile-games-scraper.git
-   cd amazon-mobile-games-scraper
-   ```
-
-2. **创建虚拟环境**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   ```
-
-3. **安装依赖**
-   ```bash
-   pip install -r requirements.txt
-   ```
 
 ## �🚀 快速启动
 
