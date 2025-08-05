@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亚马逊游戏爬虫</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .game-card {
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .game-img {
+            height: 200px;
+            object-fit: contain;
+            background-color: #f8f9fa;
+        }
+        .filter-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .filter-section .form-control, .filter-section .form-select {
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .category-badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+        }
+        .price-free {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .price-paid {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .no-results {
+            display: none;
+            text-align: center;
+            margin: 50px 0;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <div class="text-center mb-4">
+            <h1><i class="fas fa-gamepad"></i> 亚马逊手机游戏</h1>
+            <p class="text-muted">发现和筛选来自亚马逊的手机游戏</p>
+        </div>
+        
+        <!-- 统计信息 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <h3 class="text-primary" id="totalGames">{{ games|length }}</h3>
+                    <p class="mb-0">游戏总数</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <h3 class="text-success" id="displayedGames">{{ games|length }}</h3>
+                    <p class="mb-0">当前显示</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <h3 class="text-info" id="freeGames">-</h3>
+                    <p class="mb-0">免费游戏</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <h3 class="text-warning" id="avgReviews">-</h3>
+                    <p class="mb-0">平均评论数</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 筛选器 -->
+        <div class="filter-section">
+            <h4 class="mb-3"><i class="fas fa-filter"></i> 筛选游戏</h4>
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="minReviews" class="form-label">最少评论数</label>
+                    <input type="number" id="minReviews" class="form-control" min="0" value="0" placeholder="例如: 100">
+                </div>
+                <div class="col-md-3">
+                    <label for="maxReviews" class="form-label">最多评论数</label>
+                    <input type="number" id="maxReviews" class="form-control" min="0" placeholder="留空表示无限制">
+                </div>
+                <div class="col-md-3">
+                    <label for="categoryFilter" class="form-label">游戏类型</label>
+                    <select id="categoryFilter" class="form-select">
+                        <option value="">所有类型</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="priceFilter" class="form-label">价格类型</label>
+                    <select id="priceFilter" class="form-select">
+                        <option value="all">所有游戏</option>
+                        <option value="free">仅免费</option>
+                        <option value="paid">仅付费</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label for="releaseDateFilter" class="form-label">发布时间筛选</label>
+                    <input type="month" id="releaseDateFilter" class="form-control" placeholder="选择年月">
+                    <small class="form-text text-light">选择后将显示该月份之后发布的游戏</small>
+                </div>
+                <div class="col-md-8 d-flex align-items-end">
+                    <button class="btn btn-light btn-lg me-2" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> 应用筛选
+                    </button>
+                    <button class="btn btn-outline-light" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i> 重置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载指示器 -->
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+            <p class="mt-2">正在筛选游戏...</p>
+        </div>
+
+        <!-- 无结果提示 -->
+        <div class="no-results" id="noResults">
+            <i class="fas fa-search" style="font-size: 3em; color: #dee2e6;"></i>
+            <h4>未找到游戏</h4>
+            <p>尝试调整筛选条件以查看更多结果。</p>
+        </div>
+
+        <!-- 游戏列表 -->
+        <div class="row" id="gamesContainer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 初始数据 - 从隐藏元素获取，避免模板语法问题
+        let allGames = [];
+        let currentGames = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从服务器获取初始数据
+            loadInitialData();
+        });
+
+        async function loadInitialData() {
+            try {
+                const response = await fetch('/api/filter');
+                allGames = await response.json();
+                currentGames = [...allGames];
+                displayGames(currentGames);
+                updateStats(currentGames);
+            } catch (error) {
+                console.error('加载初始数据失败:', error);
+                // 如果API失败，显示空状态
+                displayGames([]);
+                updateStats([]);
+            }
+        }
+
+        function displayGames(games) {
+            const container = document.getElementById('gamesContainer');
+            const noResults = document.getElementById('noResults');
+            
+            if (games.length === 0) {
+                container.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            const gamesHTML = games.map(game => {
+                const imageUrl = game.image || '/static/default-game.png';
+                const priceClass = game.price === '$0.00' ? 'price-free' : 'price-paid';
+                const linkButton = game.link ? 
+                    `<a href="${game.link}" target="_blank" class="btn btn-outline-primary mt-auto">
+                        <i class="fas fa-external-link-alt"></i> 在亚马逊查看
+                    </a>` : 
+                    '<span class="text-muted">链接不可用</span>';
+                
+                return `
+                    <div class="col-md-4 game-card">
+                        <div class="card h-100">
+                            <img src="${imageUrl}" 
+                                 class="card-img-top game-img" 
+                                 alt="${game.title}"
+                                 onerror="this.src='/static/default-game.png'">
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-2">
+                                    <span class="badge bg-secondary category-badge">${game.category || '其他'}</span>
+                                </div>
+                                <h5 class="card-title">${game.title}</h5>
+                                <div class="card-text flex-grow-1">
+                                    <p class="mb-2">
+                                        <strong>价格:</strong> 
+                                        <span class="${priceClass}">
+                                            ${game.price}
+                                        </span>
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>评论数:</strong> 
+                                        <span class="badge bg-info">${(game.reviews || 0).toLocaleString()}</span>
+                                    </p>
+                                    ${game.release_date ? `<p class="mb-2">
+                                        <strong>发布时间:</strong> 
+                                        <span class="text-muted">${game.release_date}</span>
+                                    </p>` : ''}
+                                </div>
+                                ${linkButton}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = gamesHTML;
+        }
+
+        function updateStats(games) {
+            document.getElementById('displayedGames').textContent = games.length;
+            
+            const freeGames = games.filter(game => game.price === '$0.00').length;
+            document.getElementById('freeGames').textContent = freeGames;
+            
+            if (games.length > 0) {
+                const avgReviews = Math.round(games.reduce((sum, game) => sum + game.reviews, 0) / games.length);
+                document.getElementById('avgReviews').textContent = avgReviews.toLocaleString();
+            } else {
+                document.getElementById('avgReviews').textContent = '0';
+            }
+        }
+
+        async function applyFilters() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block';
+            
+            const minReviews = parseInt(document.getElementById('minReviews').value) || 0;
+            const maxReviews = parseInt(document.getElementById('maxReviews').value) || null;
+            const category = document.getElementById('categoryFilter').value;
+            const priceType = document.getElementById('priceFilter').value;
+            const releaseDate = document.getElementById('releaseDateFilter').value;
+            
+            try {
+                const params = new URLSearchParams({
+                    min_reviews: minReviews,
+                    category: category,
+                    price_type: priceType
+                });
+                
+                if (maxReviews) {
+                    params.append('max_reviews', maxReviews);
+                }
+                
+                if (releaseDate) {
+                    params.append('release_date', releaseDate);
+                }
+                
+                const response = await fetch(`/api/filter?${params}`);
+                const filteredGames = await response.json();
+                
+                currentGames = filteredGames;
+                displayGames(currentGames);
+                updateStats(currentGames);
+                
+            } catch (error) {
+                console.error('Error filtering games:', error);
+                alert('筛选游戏时出错，请重试。');
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('minReviews').value = '0';
+            document.getElementById('maxReviews').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('priceFilter').value = 'all';
+            document.getElementById('releaseDateFilter').value = '';
+            
+            currentGames = [...allGames];
+            displayGames(currentGames);
+            updateStats(currentGames);
+        }
+
+        // 回车键触发筛选
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyFilters();
+            }
+        });
+    </script>
+</body>
+</html>

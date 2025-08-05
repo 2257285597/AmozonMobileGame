@@ -1,9 +1,71 @@
-# 🎮 亚马逊游戏爬虫 - 中文版
+# 🎮 Amazon Mobile Games Scraper
+
+[![   pip install -r requirements.txt
+   ```
+
+## ⚙️ 重要配置说明
+
+### 🌐 网络服务配置
+- **默认地址**: `http://127.0.0.1:5000`
+- **端口**: `5000`（可在代码中修改）
+- **访问限制**: 仅本地访问（localhost）
+
+### 📁 数据文件路径
+- **爬取数据**: `amazon_scraper/games_data.json`
+- **模板文件**: `web_app/templates/`
+- **静态资源**: `web_app/static/`
+
+### 🕷️ 爬虫配置
+- **请求延迟**: 2秒（防止被封IP）
+- **User-Agent**: 已配置Chrome浏览器标识
+- **robots.txt**: 已禁用遵循（`ROBOTSTXT_OBEY = False`）
+
+### 🔧 环境变量说明
+项目无需额外环境变量配置，所有配置已内置。如需自定义：
+- 修改 `web_app/app.py` 中的 `app.run()` 参数调整端口
+- 修改 `amazon_scraper/amazon_scraper/settings.py` 调整爬虫行为
+
+## 🚀 快速启动on](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-2.0+-green.svg)](https://flask.palletsprojects.com/)
+[![Scrapy](https://img.shields.io/badge/Scrapy-2.0+-red.svg)](https://scrapy.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 🌟 项目概述
+
 这是一个完整的亚马逊手机游戏数据爬取和展示系统，提供中文界面和智能筛选功能。
 
-## 🚀 快速启动
+**主要特性：**
+- 🕷️ 基于Scrapy的高效爬虫系统
+- 🌐 Flask Web界面，支持实时筛选
+- 📊 丰富的数据统计和可视化
+- 🎯 多维度智能筛选（价格、类型、评论数、时间）
+- 📦 支持打包为独立可执行文件
+
+## �️ 环境要求
+
+- Python 3.8+
+- Windows系统（批处理文件适配）
+
+## 📦 安装步骤
+
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/your-username/amazon-mobile-games-scraper.git
+   cd amazon-mobile-games-scraper
+   ```
+
+2. **创建虚拟环境**
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate  # Windows
+   ```
+
+3. **安装依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## �🚀 快速启动
 
 ### 方法1: 完整启动（首次使用）
 ```bash
@@ -23,17 +85,17 @@ build_standalone.bat
 ```
 > 打包成独立exe文件，双击即可运行，无需配置环境
 
-### 方法4: 分步启动
+### 方法4: 手动启动
 1. **启动爬虫**
    ```bash
    cd amazon_scraper
-   ..\venv\Scripts\scrapy crawl amazon_games -o games_data.json
+   scrapy crawl amazon_games -o games_data.json
    ```
 
 2. **启动Web应用**
    ```bash
    cd web_app
-   ..\venv\Scripts\python app.py
+   python app.py
    ```
 
 3. **访问应用**
@@ -215,6 +277,84 @@ del games_data.json
 ✅ **响应式设计** - 支持各种设备完美显示  
 ✅ **一键部署** - run.bat脚本自动化所有流程  
 ✅ **独立可执行** - 无需Python环境，双击即可运行  
+
+## 🚨 疑难解答
+
+### 常见问题
+
+**Q: 访问 http://127.0.0.1:5000 提示无法连接？**
+```bash
+# 检查Python环境
+python --version
+
+# 检查Flask是否安装
+pip show flask
+
+# 检查端口是否被占用
+netstat -ano | findstr :5000
+```
+
+**Q: 爬虫无法获取数据？**
+```bash
+# 检查网络连接
+ping amazon.com
+
+# 检查Scrapy版本
+pip show scrapy
+
+# 手动测试爬虫
+cd amazon_scraper
+scrapy crawl amazon_games -L INFO
+```
+
+**Q: 独立exe文件无法运行？**
+- 确保已运行 `build_standalone.bat`
+- 检查防火墙/杀毒软件是否阻止
+- 查看 `build/standalone_app/warn-standalone_app.txt` 日志
+
+**Q: 数据显示为空？**
+- 确认 `amazon_scraper/games_data.json` 文件存在
+- 检查JSON文件格式是否正确
+- 重新运行爬虫更新数据
+
+### 端口配置
+
+**修改默认端口 (5000):**
+
+1. **修改Web应用端口**:
+   编辑 `web_app/app.py` 最后一行:
+   ```python
+   app.run(debug=True, port=8080)  # 改为8080端口
+   ```
+
+2. **修改独立应用端口**:
+   编辑 `standalone_app.py` 第190行:
+   ```python
+   app.run(host='127.0.0.1', port=8080, debug=False, use_reloader=False)
+   ```
+
+3. **修改批处理文件提示**:
+   相应更新 `start_web.bat` 中的访问地址提示
+
+### 网络配置
+
+**允许局域网访问:**
+```python
+# 修改 app.run() 参数
+app.run(host='0.0.0.0', port=5000, debug=True)
+```
+⚠️ **安全警告**: 仅在受信任的网络环境中使用
+
+## 📝 版本信息
+
+- **当前版本**: v1.0.0  
+- **Python版本**: 3.8+  
+- **主要依赖**: Scrapy 2.11.0, Flask 3.0.2  
+- **兼容系统**: Windows 10/11  
+
+## 📄 许可证
+
+本项目采用 [MIT License](LICENSE) 开源协议。
 ✅ **时间筛选** - 根据游戏发布时间精准筛选  
 
 ## 📞 使用说明
